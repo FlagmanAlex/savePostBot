@@ -7,6 +7,7 @@ const PostsSchema = new mongoose.Schema({
     PostPhotoUrl: {type: String, required: true},
     PostPhotoPath: {type: String},
     PostCaption: {type: String},
+    PostCaptionEntities: {type: mongoose.Schema.Types.Mixed}
     // PostDate: {type: Date}
 })
 module.exports = mongoose.model('Posts', PostsSchema)

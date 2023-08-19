@@ -3,18 +3,23 @@ const config = require('config')
 const mongoose = require('mongoose')
 const Users = require('./models/users.model')
 const Posts = require('./models/posts.model')
-const { saveImage } = require('./utils/file')
+const { saveImage, parseTelegramMessage} = require('./utils')
 
 const user = new Users()
 const post = new Posts()
 
-mongoose.connect(config.get('FMH_BD_TOKEN'), {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).catch(e=>console.log(e))
 
+mongoose.connect(config.get('BD_TOKEN'), {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    dbName: 'fmh'    
+})  .then(()=> console.log('Соединение с базой прошло успешно!'))
+    .catch(e=>console.log(e))
 
 const bot = new TelegramBot(config.get("BOT_TOKEN"), {polling: true})
+
+//Отлавливаем оишибку polling
+bot.on("polling_error", err => console.log(err.data.error.message));
 
 bot.on('message', async msg => {
         Users.findOne({userId: msg.from.id}).then(u => {
@@ -26,6 +31,7 @@ bot.on('message', async msg => {
             }
         }).catch(e => console.log(e))
     if (msg.photo) {
+        console.log(msg);
         const photo = msg.photo
         const fileId = photo[msg.photo.length-1].file_id
         link = await bot.getFileLink(fileId)
@@ -34,8 +40,19 @@ bot.on('message', async msg => {
         post.PostChatId = msg.chat.id
         post.PostPhotoUrl = link
         post.PostPhotoPath = await saveImage(link, post.PostChatId + '_' + post.PostId)
-        post.PostCaption = msg.caption
-        post.save().catch(e => console.log(e))
-        bot.sendPhoto(post.PostChatId, post.PostFileId, {caption: post.PostCaption})
+        if (msg.caption) {
+            if (msg.caption_entities)
+            {
+                post.PostCaptionEntities = msg.caption_entities
+                post.PostCaption = msg.caption
+                text = parseTelegramMessage(msg)
+
+            }
+        } else post.PostCaption = ''
+        post.save()
+            .catch(e => console.log(e))
+            .then(() => {
+                bot.sendPhoto(config.get('SAVE_CHAT_ID'), post.PostFileId, {caption: text, parse_mode: 'HTML'})
+            })
     }
 })

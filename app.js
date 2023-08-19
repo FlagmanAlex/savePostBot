@@ -31,7 +31,6 @@ bot.on('message', async msg => {
             }
         }).catch(e => console.log(e))
     if (msg.photo) {
-        console.log(msg);
         const photo = msg.photo
         const fileId = photo[msg.photo.length-1].file_id
         link = await bot.getFileLink(fileId)

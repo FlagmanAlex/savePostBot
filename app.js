@@ -33,6 +33,7 @@ bot.on('message', async msg => {
     if (msg.photo) {
         const photo = msg.photo
         const fileId = photo[msg.photo.length-1].file_id
+        let captionText = ''
         link = await bot.getFileLink(fileId)
         post.PostId = msg.message_id
         post.PostFileId = fileId
@@ -40,18 +41,19 @@ bot.on('message', async msg => {
         post.PostPhotoUrl = link
         post.PostPhotoPath = await saveImage(link, post.PostChatId + '_' + post.PostId)
         if (msg.caption) {
+            captionText = msg.caption
             if (msg.caption_entities)
             {
                 post.PostCaptionEntities = msg.caption_entities
                 post.PostCaption = msg.caption
-                text = parseTelegramMessage(msg)
+                captionText = parseTelegramMessage(msg)
 
             }
         } else post.PostCaption = ''
         post.save()
             .catch(e => console.log(e))
             .then(() => {
-                bot.sendPhoto(config.get('SAVE_CHAT_ID'), post.PostFileId, {caption: text, parse_mode: 'HTML'})
+                bot.sendPhoto(config.get('SAVE_CHAT_ID'), post.PostFileId, {caption: captionText, parse_mode: 'HTML'})
             })
     }
 })

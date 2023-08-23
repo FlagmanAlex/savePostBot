@@ -5,10 +5,6 @@ const Users = require('./models/users.model')
 const Posts = require('./models/posts.model')
 const { saveImage, parseTelegramMessage} = require('./utils')
 
-const user = new Users()
-const post = new Posts()
-
-
 mongoose.connect(config.get('BD_TOKEN'), {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -39,6 +35,7 @@ bot.on('channel_post', async msg => {
             //     }
             // }).catch(e => console.log(e))
     if (msg.photo) {
+        const post = new Posts()
         post.date = date
         const photo = msg.photo
         const fileId = photo[msg.photo.length-1].file_id

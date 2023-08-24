@@ -15,7 +15,7 @@ mongoose.connect(config.get('BD_TOKEN'), {
 const bot = new TelegramBot(config.get("BOT_TOKEN"), {polling: true})
 
 //Отлавливаем оишибку polling
-bot.on("polling_error", err => console.log(err.data.error.message));
+bot.on("polling_error", err => console.log(err));
 
 bot.on('channel_post', async msg => {
     const date = Date(msg.date)
